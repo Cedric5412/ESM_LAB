@@ -1,0 +1,53 @@
+import xarray as xr
+import numpy as np
+import matplotlib.pyplot as plt
+import cartopy.crs as ccrs
+import cartopy.feature as cf
+import os
+import cmocean
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+
+# Creates output folder if it doesn't exist
+output_folder = './Plots/'
+if not os.path.isdir(output_folder):
+    os.mkdir(output_folder)
+
+local_path = os.path.expanduser('~/ESP/ESM/ESM_LAB/Data/msdwswrf_ERA5_2000-2009_zonalmean.nc')
+ds = xr.open_dataset(local_path)
+
+print("Data loaded successfully.")
+
+val = ds['avg_snswrf'].isel(lon=0)
+
+def Zonal_plot(dataset, title, ax):
+    im = ax.contourf(dataset.valid_time, dataset.lat, dataset.T, 
+                     cmap=cmocean.cm.thermal, levels = 10)
+    ax.set_title(title, fontweight='bold', pad=20, fontsize=14)
+
+    lat_ticks = [-90, -60, -30, 0, 30, 60, 90] 
+    ax.set_yticks(lat_ticks)
+    latitude_labels = ['90S', '60S', '30S', '0', '30N', '60N', '90N']
+    ax.set_yticklabels(latitude_labels, fontsize=13)
+    
+    month_labels = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D']
+    ax.set_xticks(dataset.valid_time[:12])  
+    ax.set_xticklabels(month_labels, fontsize=13)
+    
+    return im
+
+fig = plt.figure(figsize=(12, 8))
+ax = fig.add_subplot(111) 
+title = 'Zonal Mean Insolation (W m$^{-2}$)\n(ERA5 1991-2020)'
+im1 = Zonal_plot(val, title, ax)
+
+# Customize colrbar
+divider = make_axes_locatable(ax)
+cax = divider.append_axes("right", size="5%", pad=0.08)
+cbar = plt.colorbar(im1, cax=cax, aspect=30)
+cbar.ax.tick_params(labelsize=12)
+
+plt.tight_layout()
+fname = os.path.join(output_folder, 'solar_insolation_zonal.png')
+plt.savefig(fname, dpi=300, bbox_inches='tight')
+
