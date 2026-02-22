@@ -1,1 +1,1 @@
-Earth Sytem Modelling.
+ICTP Postgraduate diploma: Earth Sytem Modelling.
