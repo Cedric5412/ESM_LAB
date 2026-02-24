@@ -4,54 +4,60 @@ import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import cartopy.feature as cf
 import os
-import cmocean
+import cmocean 
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-
 
 # Creates output folder if it doesn't exist
 output_folder = './Plots/'
 if not os.path.isdir(output_folder):
     os.mkdir(output_folder)
 
-local_pathsw = os.path.expanduser('~/ESP/ESM/ESM_LAB/Data/net_zonmean_sw.nc')
+local_pathsw = os.path.expanduser('~/ESP/ESM/ESM_LAB/Data/toa_zonalmean_sw.nc')
 dssw = xr.open_dataset(local_pathsw)
 
-local_pathlw = os.path.expanduser('~/ESP/ESM/ESM_LAB/Data/net_zonmean_lw.nc')
+local_pathlw = os.path.expanduser('~/ESP/ESM/ESM_LAB/Data/toa_zonalmean_lw.nc')
 dslw = xr.open_dataset(local_pathlw)
 
 print("Data loaded successfully.")
 
-sw = dssw['avg_snswrf'].isel(lon=0).mean('valid_time')  
-lw = np.abs(dslw['avg_snlwrf'].isel(lon=0).mean('valid_time'))
+sw = dssw['avg_tnswrf'].isel(lon=0).mean('valid_time')  
+lw = np.abs(dslw['avg_tnlwrf'].isel(lon=0).mean('valid_time'))
+net_flux = sw - lw
 
-def annual_flux(sw_data, lw_data, title, ax):
+def annual_flux(sw_data, lw_data, net_flux, title):
 
-    # Both on same axes
-    ax.plot(sw_data.lat, sw_data.values, linewidth=3, label='Net SW')
-    ax.plot(lw_data.lat, lw_data.values, linewidth=3, label='Net LW')
-    
-    ax.set_title(title, fontweight='bold', pad=20, fontsize=14)
-    ax.set_xlabel('Latitude', fontsize=13)
-    ax.set_ylabel('Net Flux (W m$^{-2}$)',  fontsize=13)
+    f, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(14,9))
 
-    y_labels = [60, 90, 120, 150, 180, 210, 240, 270, 300]
-    ax.set_yticks(y_labels)
-    ax.set_yticklabels(['60', '90', '120', '150', '180', '210', '240', '270', '300'], fontsize=13)
+    ax1.plot(sw_data.lat, sw_data.values, linewidth=3, label='SW', color='indianred')
+    ax1.plot(lw_data.lat, lw_data.values, linewidth=3, label='LW', color ='darkslategray')
+    ax1.set_title(title, fontweight='bold', pad=20, fontsize=14)
+    ax1.set_ylabel('Net flux (W m$^{-2}$)',  fontsize=13)
+
+    # y_labels = [60, 90, 120, 150, 180, 210, 240, 270, 300]
+    # ax1.set_yticks(y_labels)
+    # ax1.set_yticklabels(['60', '90', '120', '150', '180', '210', '240', '270', '300'], fontsize=13)
 
     lat_ticks = [-90, -60, -30, 0, 30, 60, 90]
-    ax.set_xticks(lat_ticks)
-    ax.set_xticklabels(['90S', '60S', '30S', '0', '30N', '60N', '90N'], fontsize=13)
-    
-    ax.grid(True, alpha=0.3)
-    ax.legend(loc='upper right')
-    plt.gca().spines['top'].set_visible(False)
-    plt.gca().spines['right'].set_visible(False)
-    
+    ax1.set_xticks(lat_ticks)
+    ax1.set_xticklabels(['90S', '60S', '30S', '0', '30N', '60N', '90N'], fontsize=13)
+    ax1.set_xlim(np.min(lat_ticks), np.max(lat_ticks))
+    ax1.legend(loc='upper right', fontsize=13)
+    ax1.spines[['top', 'right']].set_visible(False)
+    ax1.tick_params(axis='both', labelsize=13)
 
-# Usage (drop-in replacement)
-fig, ax = plt.subplots(figsize=(12, 8))
+    
+    ax2.plot(net_flux.lat, net_flux.values, linewidth=3, label=r'SW $-$ LW', color='teal')
+    ax2.legend(loc='upper right', fontsize=13)
+    ax2.set_xlabel('Latitude', fontsize=13)
+    ax2.set_ylabel('Net flux (W m$^{-2}$)',  fontsize=13)
+    ax2.spines[['top', 'right']].set_visible(False)
+    ax2.tick_params(axis='both', labelsize=13)
+   
+
+   
+
 title = 'Zonal mean TOA radiation fluxes \n (ERA5 1991-2020)'
-annual_flux(sw, lw, title, ax)
+annual_flux(sw, lw, net_flux, title)
 plt.tight_layout()
 fname = os.path.join(output_folder, 'Zonal_curve.png')
 plt.savefig(fname, dpi=300, bbox_inches='tight')

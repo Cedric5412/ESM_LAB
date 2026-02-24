@@ -12,27 +12,26 @@ output_folder = './Plots/'
 if not os.path.isdir(output_folder):
     os.mkdir(output_folder)
 
-path_sw = os.path.expanduser('~/ESP/ESM/ESM_LAB/Data/annual_avg_snswrf_ERA5_1991-2020.nc')
-# path_lw = os.path.expanduser('~/ESP/ESM/ESM_LAB/Data/annual_avg_snlwrf_ERA5_1991-2020.nc')
-path_lw = os.path.expanduser('~/ESP/ESM/ESM_LAB/Data/toanetlw_era5.nc')
+path_sw = os.path.expanduser('~/ESP/ESM/ESM_LAB/Data/toa_mean_sw.nc')
+path_lw = os.path.expanduser('~/ESP/ESM/ESM_LAB/Data/toa_mean_lw.nc')
 
 ds_sw = xr.open_dataset(path_sw)
 ds_lw = xr.open_dataset(path_lw)
 
 print("Data loaded successfully.")
 
-swr = ds_sw['avg_snswrf'].isel(valid_time=0)
-lwr = np.abs(ds_lw['ttr'])
-# print(f"Shape: {lwr.shape}, Min: {lwr.min():.1f}, Max: {lwr.max():.1f}")
+swr = ds_sw['avg_tnswrf'].isel(valid_time=0)
+lwr = np.abs(ds_lw['avg_tnlwrf'].isel(valid_time=0))
+
 def Global_plot(dataset, title, ax):
     im = ax.contourf(dataset.longitude, dataset.latitude, dataset,
                      transform=ccrs.PlateCarree(),
-                     cmap=cmocean.cm.balance, levels=20, vmin = 0.8*dataset.min(), vmax = 1.2*dataset.max()
+                     cmap=cmocean.cm.solar, levels=20, vmin = 0.8*dataset.min(), vmax = 1.2*dataset.max()
                      )
     
     ax.coastlines(resolution='110m')
     ax.set_title(title, fontweight='bold', pad=20)
-    gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=False,
+    gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=False, linestyle='--',
                       linewidth=0.5, color='black', alpha=0.5, zorder=1.5)
     gl.top_labels = False
     gl.right_labels = False
