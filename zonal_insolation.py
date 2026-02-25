@@ -24,10 +24,12 @@ val = ds['avg_tdswrf'].isel(lon=0)
 
 def Zonal_plot(dataset, title, ax):
     # Set up color levels
-    vmin, vmax = np.nanmin(val), np.nanmax(val)
-    levels = np.linspace(vmin, vmax, 12)
+    vmin_round = np.floor(np.nanmin(dataset) / 10) * 10
+    vmax_round = np.ceil(np.nanmax(dataset) / 10) * 10
+    levels = np.arange(vmin_round, vmax_round + 20, 20)
+
     # Create a custom colormap where 0 values are white
-    cmap = plt.get_cmap(cmocean.cm.thermal, len(levels) - 1)
+    cmap = plt.get_cmap('turbo', len(levels) - 1)
     newcolors = cmap(np.linspace(0, 1, len(levels) - 1))
 
     # Identify which bin contains 0

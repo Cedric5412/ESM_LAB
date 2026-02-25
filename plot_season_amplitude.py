@@ -36,12 +36,12 @@ def Global_plot(dataset, title, ax):
 
     cs = ax.contour(dataset.longitude, dataset.latitude, dataset,
                     transform=ccrs.PlateCarree(),
-                    levels=levels,  cmap='rainbow'
+                    levels=levels,  cmap='coolwarm'
                     , linewidths=0.6)
 
     
     ax.clabel(cs, inline=True, fontsize=10, fmt='%.1f')
-    ax.coastlines(resolution='110m')
+    ax.coastlines(resolution='110m', alpha=0.2)
     ax.set_title(title, fontweight='bold', fontsize=10)
     gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
                       linewidth=0.5, color='black', alpha=0.2, zorder=1.5)
@@ -56,7 +56,6 @@ fig = plt.figure(figsize=(12, 8))
 title = ''
 ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree(central_longitude=180))
 im1 = Global_plot(t2m_north, title, ax)
-# cbar = plt.colorbar(im1, ax=ax, orientation='horizontal', shrink=0.8, pad=0.08, aspect=40)
 plt.subplots_adjust(bottom=0.15)
 fname = os.path.join(output_folder, 't2m_seasonal_amp.png')
 plt.savefig(fname, dpi=300, bbox_inches='tight')

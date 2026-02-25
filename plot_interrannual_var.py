@@ -23,7 +23,7 @@ sigma_t2m = ds['tmp'].isel(time=0)
 def Global_plot(dataset, title, ax):
     im = ax.contourf(dataset.lon, dataset.lat, dataset.values,
                      transform=ccrs.PlateCarree(),
-                     cmap=cmocean.cm.thermal, 
+                     cmap=cmocean.cm.balance, 
                      levels=10
                      )
     
