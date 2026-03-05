@@ -10,21 +10,14 @@ output_folder = './Plots/'
 if not os.path.isdir(output_folder):
     os.mkdir(output_folder)
 
-# =============================================================================
-# DATA PATH
-# =============================================================================
 data_path = Path("/home/cpizina/ESP/ESM/ESM_LAB/Data")
 
 timmean_fluxes = data_path / "fluxes_ymonmean.nc"    # Annual cycle of all the fluxes W m-2
 
-# =============================================================================
-# LOAD DATA
-# =============================================================================
-
 ds = xr.open_dataset(timmean_fluxes)
 print('---- Data successfully opened ----')
 toamasina_box = ds.sel(
-    latitude=slice(-18.00, -18.50),    
+    latitude=slice(-17.50, -18.50),    
     longitude=slice(49.00, 49.50)    
 )
 
