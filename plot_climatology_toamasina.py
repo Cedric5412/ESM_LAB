@@ -13,50 +13,48 @@ if not os.path.isdir(output_folder):
     os.mkdir(output_folder)
 
 data_path = Path("/home/cpizina/ESP/ESM/ESM_LAB/Data")
-timmean_fluxes = data_path / "fluxes_timmean.nc"  # Annual mean of all the fluxes W m-2
+tp_file = data_path / "tp_ymonmean.nc"      
+t2m_file = data_path / "t2m_ymonmean.nc"  
 
-ds = xr.open_dataset(timmean_fluxes).squeeze('valid_time')
-print('---- Data successfully opened----')
+precip = xr.open_dataset(tp_file)
+temperature = xr.open_dataset(t2m_file)
 
-# Radiative forcing
-swf = ds.avg_snswrf
-lwf = ds.avg_snlwrf
-Rs = lwf + swf
+tp = 1000*precip['tp'].mean(dim='valid_time').sel(latitude=slice(-11.5, -26.0), 
+                            longitude=slice(42, 52))
+temp = temperature['t2m'].mean(dim='valid_time').sel(latitude=slice(-11.5, -26.0), 
+                            longitude=slice(42, 52))
 
-# Outflux
-shf = np.abs(ds.avg_ishf)
-lhf = np.abs(ds.avg_slhtf)
-
-# Ground heat flux
-G = Rs - (shf + lhf)
+temp = temp - 273.15
 
 def plot_global_field(field, title, filename):
-    levels = np.linspace(-20, 200, 23)
-    fig, ax = plt.subplots(figsize=(12, 8),
-                           subplot_kw=dict(projection=ccrs.Mollweide(central_longitude=180)))
+    fig, ax = plt.subplots(figsize=(8, 12),
+                           subplot_kw=dict(projection=ccrs.PlateCarree(central_longitude=0)))
     
     im = ax.contourf(field.longitude, field.latitude, field.values,
                      transform=ccrs.PlateCarree(),
-                     cmap=cmocean.cm.balance, 
-                     levels=levels)
+                     cmap=cmocean.cm.balance ,
+                     levels=14
+                     )
     
-    ax.coastlines(resolution='110m')
+    ax.coastlines(resolution='110m', lw=2)
     ax.set_title(title, fontweight='bold', pad=20)
+    ax.set_extent([42, 52, -26, -11.5], crs=ccrs.PlateCarree())
     gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=False, linestyle='--',
                       linewidth=0.3, color='black', alpha=0.5, zorder=1.5)
     gl.top_labels = False
     gl.right_labels = False
     
     cbar = plt.colorbar(im, ax=ax, orientation='horizontal', 
-                        shrink=0.8, pad=0.08, aspect=40, label=r'$Wm^{-2}$')
+                        shrink=0.8, pad=0.08, aspect=20, label=r'$^{\circ} C$')
     plt.subplots_adjust(bottom=0.15)
     fname = os.path.join(output_folder, filename)
     plt.savefig(fname, dpi=300, bbox_inches='tight')
+    # plt.show()
     plt.close()
+   
     print(f"Saved: {filename}")
 
 
-# plot_global_field(Rs, '', 'Radiative_heating.png')
-plot_global_field(lhf, '', 'latent_heat_flux.png')
-# plot_global_field(shf, '', 'sensible_heat_flux.png')
-# plot_global_field(G, '', 'Ground_heat_flux.png')
+plot_global_field(temp, '', 'Temp.png')
+# plot_global_field(tp, '', 'Precip.png')
+
